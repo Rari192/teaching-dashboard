@@ -1037,7 +1037,18 @@
     return transact(this.db, ['snapshots'], 'readonly', function (s) {
       return promisifyRequest(s.snapshots.get('pre-restore')).then(function (snap) {
         if (!snap) return null;
-        var summary = validateBackup(snap.data).summary;
+        var check = validateBackup(snap.data);
+        var d = snap.data || {};
+        // A safety copy can hold lessons in an older format, which no longer pass the checks;
+        // count from the copy itself so Undo still works.
+        var summary = check.ok ? check.summary : {
+          classCount: Array.isArray(d.classes) ? d.classes.length : 0,
+          lessonCount: DAYS.reduce(function (n, day) {
+            var row = d.timetable && d.timetable[day];
+            return n + (Array.isArray(row) ? row.filter(Boolean).length : 0);
+          }, 0),
+          importedLessonCount: Array.isArray(d.lessons) ? d.lessons.length : 0
+        };
         return {
           savedAt: snap.savedAt,
           classCount: summary.classCount,

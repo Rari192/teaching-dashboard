@@ -901,6 +901,23 @@
     });
   });
 
+  test('Undo restore still works when the safety copy holds lessons in the old file format', function () {
+    return withFreshStore(function (store) {
+      var old = { schemeId: 'y9', importedAt: null, lesson: { id: 'y9/old', version: 1, position: 1, topic: 'T', title: 'Old', objective: 'O', doNow: { questions: [] } } };
+      // Put an old-format lesson straight into the database, as an iPad that imported one before this version would have.
+      return new Promise(function (resolve, reject) {
+        var tx = store.db.transaction(['lessons'], 'readwrite');
+        tx.objectStore('lessons').put({ id: 'y9/old', schemeId: 'y9', position: 1, version: 1, title: 'Old', topic: 'T', type: '', importedAt: null, lesson: old.lesson });
+        tx.oncomplete = resolve; tx.onerror = function () { reject(tx.error); };
+      }).then(function () {
+        return store.restoreFromBackup({ app: 'teaching-dashboard', formatVersion: 1, classes: [], timetable: {} });
+      }).then(function () { return store.getUndoInfo(); })
+        .then(function (info) { eq(info.importedLessonCount, 1, 'old lesson counted'); return store.undoRestore(); })
+        .then(function () { return store.getLesson('y9/old'); })
+        .then(function (r) { ok(r, 'old lesson put back'); });
+    });
+  });
+
   // ---- Where you are in a lesson ----
   test('The open step is remembered per class, and a new lesson version starts again from the first step', function () {
     return withFreshStore(function (store) {

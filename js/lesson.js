@@ -40,9 +40,9 @@
     var p = params();
     var data = host.data();
     var lesson = data.lessons.filter(function (l) { return l.id === p.l; })[0] || null;
-    if (!lesson) {
+    if (!lesson || !Array.isArray(lesson.lesson.steps)) {
       state = null;
-      renderMissing();
+      renderMissing(!!lesson);
       return Promise.resolve();
     }
     var cls = p.c ? data.classes.filter(function (c) { return c.id === p.c; })[0] || null : null;
@@ -64,9 +64,14 @@
     });
   }
 
-  function renderMissing() {
+  // oldFormat: the lesson is saved but was imported in the old file format (before steps).
+  function renderMissing(oldFormat) {
     $('lesson-main').hidden = true;
     $('lesson-missing').hidden = false;
+    $('ls-missing-title').textContent = oldFormat ? 'This lesson is in the old file format' : 'This lesson is not on this iPad';
+    $('ls-missing-text').textContent = oldFormat
+      ? 'Delete it from the Lessons screen, then make the lesson file again with the current instructions and import it.'
+      : 'It may have been deleted or replaced. Import it again from the Lessons screen.';
   }
 
   function close() {
