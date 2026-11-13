@@ -781,6 +781,21 @@
     });
   });
 
+  test('Changing the next lesson by hand never creates or alters a "last taught" record', function () {
+    return withFreshStore(function (store) {
+      var c, before;
+      return store.saveClass({ name: '9A', subject: 'Computing' }).then(function (x) { c = x; return store.setClassScheme(c.id, 'y9'); })
+        .then(function () { return store.setClassPosition(c.id, 5); })
+        .then(function (p) { eq(p.log.length, 0, 'log after a manual change'); return store.markTaught(c.id, 5, new Date(2026, 10, 12)); })
+        .then(function (p) { before = JSON.stringify(p.log); return store.setClassPosition(c.id, 9); })
+        .then(function () { return store.setClassPosition(c.id, 3); })
+        .then(function (p) {
+          eq(p.position, 3, 'position');
+          eq(JSON.stringify(p.log), before, 'log unchanged by manual changes');
+        });
+    });
+  });
+
   test('Mark as taught twice for the same lesson is refused, so no lesson is skipped', function () {
     return withFreshStore(function (store) {
       var c;
