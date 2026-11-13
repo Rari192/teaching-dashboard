@@ -137,6 +137,7 @@
     root.Backup.init(host);
     root.Lessons.init(host);
     root.Lesson.init(host);
+    root.Menu.init(host);
     root.TDStorage.requestPersistence();
     root.TDStorage.open().then(function (s) {
       store = s;
