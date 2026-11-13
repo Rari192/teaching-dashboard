@@ -449,6 +449,16 @@
     eq(v.record.type, 'Theory', 'type');
   });
 
+  test('The real Year 12 hexadecimal lesson file (tests/fixtures) passes the checks', function () {
+    if (!root.fetch) return;
+    return root.fetch('tests/fixtures/y12-001-hexadecimal.json').then(function (r) { return r.json(); }).then(function (data) {
+      var v = TDStorage.validateLessonFile(data);
+      ok(v.ok, 'refused: ' + (v.errors || []).join(' / '));
+      eq(v.record.id, 'y12/hexadecimal', 'id');
+      eq(data.lesson.steps.length, 20, 'steps');
+    });
+  });
+
   test('Any stage names are accepted, in any order, and may repeat', function () {
     var v = TDStorage.validateLessonFile(lessonFile('y9', 'x', 1, 1, 'T', { steps: [
       { stage: 'I Do', heading: 'A' }, { stage: 'We Do', question: 'Q?', answer: 'A' }, { stage: 'I Do', say: 'Again.' },
