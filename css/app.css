@@ -521,3 +521,4 @@ button.lesson-row:active { background: #F0EEE8; }
 .stepper-input:focus { outline: none; }
 .pos-title { font-size: 17px; font-weight: 600; line-height: 1.35; }
 .pos-title.is-missing { color: var(--ink-3); font-weight: 500; }
+.rc-warning { margin: 0; border-radius: 14px; padding: 14px 16px; background: #F8E6E3; color: #8A2F22 !important; font-size: 16px !important; font-weight: 600; line-height: 1.45; }

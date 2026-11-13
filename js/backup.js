@@ -80,8 +80,11 @@
 
   function renderContents() {
     var data = host.data();
+    var linked = Object.keys(data.progress || {}).length;
     $('backup-contents').textContent = 'Includes ' + plural(data.classes.length, 'class', 'classes') +
-      ' and ' + plural(countLessons(data.timetable), 'timetabled lesson', 'timetabled lessons') + '.';
+      ', ' + plural(countLessons(data.timetable), 'timetabled lesson', 'timetabled lessons') +
+      ', ' + plural((data.lessons || []).length, 'imported lesson', 'imported lessons') +
+      ' and the progress of ' + plural(linked, 'class', 'classes') + '.';
   }
 
   function renderUndo() {
@@ -89,8 +92,9 @@
     if (!undoInfo) { box.hidden = true; return; }
     box.hidden = false;
     $('undo-restore-text').textContent = 'You restored a backup on ' + dayAndTime(undoInfo.savedAt) +
-      '. Undo puts back the ' + plural(undoInfo.classCount, 'class', 'classes') + ' and ' +
-      plural(undoInfo.lessonCount, 'lesson', 'lessons') + ' you had before it.';
+      '. Undo puts back the ' + plural(undoInfo.classCount, 'class', 'classes') + ', ' +
+      plural(undoInfo.lessonCount, 'timetabled lesson', 'timetabled lessons') + ' and ' +
+      plural(undoInfo.importedLessonCount || 0, 'imported lesson', 'imported lessons') + ' you had before it, with class progress.';
   }
 
   function render() {
@@ -215,10 +219,23 @@
   function openConfirm(summary, name) {
     var data = host.data();
     $('rc-now-classes').textContent = plural(data.classes.length, 'class', 'classes');
-    $('rc-now-lessons').textContent = plural(countLessons(data.timetable), 'lesson', 'lessons');
+    $('rc-now-lessons').textContent = plural(countLessons(data.timetable), 'timetabled lesson', 'timetabled lessons');
+    var nowImported = (data.lessons || []).length;
+    var nowProgress = Object.keys(data.progress || {}).length;
+    $('rc-now-imported').textContent = plural(nowImported, 'imported lesson', 'imported lessons');
     $('rc-now-when').textContent = data.lastChangedAt ? 'Last changed ' + dayAndTime(data.lastChangedAt) : 'Nothing changed yet';
     $('rc-file-classes').textContent = plural(summary.classCount, 'class', 'classes');
-    $('rc-file-lessons').textContent = plural(summary.lessonCount, 'lesson', 'lessons');
+    $('rc-file-lessons').textContent = plural(summary.lessonCount, 'timetabled lesson', 'timetabled lessons');
+    $('rc-file-imported').textContent = plural(summary.importedLessonCount || 0, 'imported lesson', 'imported lessons');
+    var warning = $('rc-warning');
+    var lose = [];
+    if (!summary.importedLessonCount && nowImported) lose.push('the ' + plural(nowImported, 'lesson', 'lessons') + ' on this iPad');
+    if (!summary.progressCount && nowProgress) lose.push('every class\'s progress');
+    warning.hidden = lose.length === 0;
+    warning.textContent = lose.length
+      ? 'This backup has no imported lessons or class progress' + (summary.formatVersion === 1 ? ' (it was made before lessons were added to the dashboard)' : '') +
+        '. ' + lose.join(' and ').replace(/^t/, 'T') + ' will be removed. You can undo this afterwards.'
+      : '';
     $('rc-file-when').textContent = summary.exportedAt ? 'Exported ' + dayOnly(summary.exportedAt) : 'Export date unknown';
     $('rc-file-name').textContent = name;
     $('restore-confirm').hidden = false;
@@ -241,8 +258,9 @@
       $('rc-replace').disabled = false;
       render();
       refreshUndo();
-      showMessage('ok', 'Backup restored: ' + plural(summary.classCount, 'class', 'classes') + ' and ' +
-        plural(summary.lessonCount, 'lesson', 'lessons') + '. Your previous data is kept, so you can undo this.');
+      showMessage('ok', 'Backup restored: ' + plural(summary.classCount, 'class', 'classes') + ', ' +
+        plural(summary.lessonCount, 'timetabled lesson', 'timetabled lessons') + ' and ' +
+        plural(summary.importedLessonCount || 0, 'imported lesson', 'imported lessons') + '. Your previous data is kept, so you can undo this.');
     }, function (err) {
       closeConfirm();
       $('rc-replace').disabled = false;
@@ -254,7 +272,8 @@
     if (!undoInfo) return;
     root.UI.confirm({
       title: 'Undo the restore?',
-      message: 'This puts back the ' + plural(undoInfo.classCount, 'class', 'classes') + ' and ' + plural(undoInfo.lessonCount, 'lesson', 'lessons') +
+      message: 'This puts back the ' + plural(undoInfo.classCount, 'class', 'classes') + ', ' + plural(undoInfo.lessonCount, 'timetabled lesson', 'timetabled lessons') +
+        ' and ' + plural(undoInfo.importedLessonCount || 0, 'imported lesson', 'imported lessons') +
         ' you had before ' + dayAndTime(undoInfo.savedAt) + '. Any changes made since the restore will be lost.',
       confirmLabel: 'Undo restore'
     }).then(function (yes) {
@@ -262,7 +281,7 @@
       host.store().undoRestore().then(function () { return host.reload(); }).then(function () {
         undoInfo = null;
         render();
-        showMessage('ok', 'Restore undone. Your previous classes and timetable are back.');
+        showMessage('ok', 'Restore undone. Your previous classes, timetable, lessons and class progress are back.');
       }, function (err) {
         showMessage('error', 'The restore could not be undone. Nothing has been changed.', [err && err.message ? err.message : '']);
       });

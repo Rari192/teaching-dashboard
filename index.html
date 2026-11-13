@@ -186,7 +186,7 @@
         <span class="last-backup-when" id="last-backup-when"></span>
         <span class="last-backup-note" id="last-backup-note"></span>
       </div>
-      <p>Saves all your classes, default subjects and timetable as one file. Keep it somewhere off this iPad, such as OneDrive or iCloud Drive.</p>
+      <p>Saves all your classes, default subjects, timetable, imported lessons and class progress as one file. Keep it somewhere off this iPad, such as OneDrive or iCloud Drive.</p>
       <p class="hint" id="backup-contents"></p>
       <div class="panel-spacer"></div>
       <button type="button" class="btn btn-primary btn-big" id="btn-export">Export backup file</button>
@@ -296,16 +296,19 @@
         <span class="eyebrow">On this iPad now</span>
         <span id="rc-now-classes"></span>
         <span id="rc-now-lessons"></span>
+        <span id="rc-now-imported"></span>
         <span class="rc-when" id="rc-now-when"></span>
       </div>
       <div class="rc-col rc-col-file">
         <span class="eyebrow">In the backup file</span>
         <span id="rc-file-classes"></span>
         <span id="rc-file-lessons"></span>
+        <span id="rc-file-imported"></span>
         <span class="rc-when" id="rc-file-when"></span>
         <span class="rc-file-name" id="rc-file-name"></span>
       </div>
     </div>
+    <p class="rc-warning" id="rc-warning" hidden></p>
     <p id="rc-msg">Everything on this iPad will be replaced by the backup. Nothing is merged. A copy of your current data is kept, so you can undo this from Backup &amp; restore.</p>
     <div class="dialog-actions">
       <button type="button" class="btn btn-large" id="rc-cancel">Cancel</button>
