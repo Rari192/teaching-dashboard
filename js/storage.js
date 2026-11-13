@@ -726,6 +726,7 @@
       return promisifyRequest(s.slots.index('byClass').getAllKeys(classId)).then(function (keys) {
         keys.forEach(function (k) { s.slots.delete(k); });
         s.progress.delete(classId);
+        s.meta.delete(openStepKey(classId));
         s.classes.delete(classId);
         touch(s.meta);
         return keys.length;
@@ -908,6 +909,32 @@
           return p;
         });
       });
+    });
+  };
+
+  // ---------- where you are in a lesson ----------
+  // Remembers the step a class is on in the lesson open on screen, so a locked iPad reopens
+  // in the same place. Keyed by class ('preview' when no class). Not part of backups, and it
+  // does not count as a change for the backup reminder. A different lesson, or a new version
+  // of the same lesson, starts from the first step.
+
+  function openStepKey(classId) { return 'openStep:' + (classId || 'preview'); }
+
+  Storage.prototype.getOpenStep = function (classId, lessonId, version) {
+    return transact(this.db, ['meta'], 'readonly', function (s) {
+      return promisifyRequest(s.meta.get(openStepKey(classId))).then(function (m) {
+        var v = m && m.value;
+        if (!v || v.lessonId !== lessonId || v.version !== version || !isWhole(v.index) || v.index < 0) return 0;
+        return v.index;
+      });
+    });
+  };
+
+  Storage.prototype.setOpenStep = function (classId, lessonId, version, index) {
+    if (!isWhole(index) || index < 0) return Promise.reject(new Error('Step number must be 0 or more.'));
+    return transact(this.db, ['meta'], 'readwrite', function (s) {
+      s.meta.put({ key: openStepKey(classId), value: { lessonId: lessonId, version: version, index: index } });
+      return index;
     });
   };
 

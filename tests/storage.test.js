@@ -901,6 +901,40 @@
     });
   });
 
+  // ---- Where you are in a lesson ----
+  test('The open step is remembered per class, and a new lesson version starts again from the first step', function () {
+    return withFreshStore(function (store) {
+      return store.setOpenStep('c9a', 'y9/hacking', 2, 5)
+        .then(function () { return store.setOpenStep('c9b', 'y9/hacking', 2, 3); })
+        .then(function () { return Promise.all([store.getOpenStep('c9a', 'y9/hacking', 2), store.getOpenStep('c9b', 'y9/hacking', 2)]); })
+        .then(function (r) { eq(r[0], 5, '9A'); eq(r[1], 3, '9B'); return store.getOpenStep('c9a', 'y9/hacking', 3); })
+        .then(function (i) { eq(i, 0, 'new version'); return store.getOpenStep('c9a', 'y9/phishing', 2); })
+        .then(function (i) { eq(i, 0, 'another lesson'); return store.getOpenStep('nobody', 'y9/hacking', 2); })
+        .then(function (i) { eq(i, 0, 'nothing remembered'); });
+    });
+  });
+
+  test('Remembering the open step does not count as a change for the backup reminder, and is not backed up', function () {
+    return withFreshStore(function (store) {
+      return store.loadAll().then(function (before) {
+        return store.setOpenStep('c9a', 'y9/hacking', 1, 4).then(function () { return store.loadAll(); }).then(function (after) {
+          eq(after.lastChangedAt, before.lastChangedAt, 'last changed');
+          return store.exportData();
+        });
+      }).then(function (b) { ok(JSON.stringify(b).indexOf('openStep') === -1, 'the open step is in the backup'); });
+    });
+  });
+
+  test('Deleting a class forgets its open step', function () {
+    return withFreshStore(function (store) {
+      var c;
+      return store.saveClass({ name: '9A', subject: 'Computing' }).then(function (x) { c = x; return store.setOpenStep(c.id, 'y9/hacking', 1, 4); })
+        .then(function () { return store.deleteClass(c.id); })
+        .then(function () { return store.getOpenStep(c.id, 'y9/hacking', 1); })
+        .then(function (i) { eq(i, 0, 'remembered step'); });
+    });
+  });
+
   // ---- Backup format 2 ----
   function fillStore(store) {
     var ids = {};
