@@ -42,6 +42,24 @@
 
   function lessonsText(n) { return n === 1 ? '1 lesson a week' : n + ' lessons a week'; }
 
+  function schemeById(id) {
+    return host.data().schemes.filter(function (sc) { return sc.id === id; })[0] || null;
+  }
+  function yearName(scheme) { return scheme ? 'Year ' + scheme.yearGroup : ''; }
+  function lessonAt(schemeId, position) {
+    return host.data().lessons.filter(function (l) { return l.schemeId === schemeId && l.position === position; })[0] || null;
+  }
+  // "Year 9 · next Lesson 8", or '' if the class follows no scheme.
+  function progressText(classId) {
+    var p = host.data().progress[classId];
+    if (!p) return '';
+    return yearName(schemeById(p.schemeId)) + ' · next Lesson ' + p.position;
+  }
+  function shortDate(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
   // ---------- saved / not saved ----------
 
   function setStatus(state, message) {
@@ -95,7 +113,8 @@
       b.setAttribute('aria-pressed', c.id === selectedId ? 'true' : 'false');
       var left = el('span', 'class-row-main');
       left.appendChild(el('span', 'class-row-name', c.name));
-      left.appendChild(el('span', 'class-row-count', lessonsText(counts[c.id] || 0)));
+      var where = progressText(c.id);
+      left.appendChild(el('span', 'class-row-count', lessonsText(counts[c.id] || 0) + (where ? ' · ' + where : '')));
       b.appendChild(left);
       b.appendChild(el('span', 'class-row-subject', c.subject));
       list.appendChild(b);
@@ -146,10 +165,49 @@
       $('subject-options').insertBefore(b, $('btn-new-subject'));
     }
 
+    renderProgress(isNew ? null : cls);
     $('class-note').hidden = isNew;
     $('new-class-actions').hidden = !isNew;
     $('btn-cancel-new').hidden = host.data().classes.length === 0;
     $('class-panel-foot').hidden = isNew;
+  }
+
+  // Scheme of work and next lesson for an existing class (hidden while adding a class).
+  function renderProgress(cls) {
+    $('scheme-field').hidden = !cls;
+    $('position-field').hidden = true;
+    if (!cls) return;
+    var data = host.data();
+    var p = data.progress[cls.id] || null;
+    var box = $('scheme-options');
+    box.textContent = '';
+    data.schemes.forEach(function (sc) {
+      var on = !!p && p.schemeId === sc.id;
+      var b = el('button', 'chip' + (on ? ' is-on' : ''), yearName(sc));
+      b.type = 'button';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.setAttribute('data-scheme', sc.id);
+      box.appendChild(b);
+    });
+    var none = el('button', 'chip' + (p ? '' : ' is-on'), 'None');
+    none.type = 'button';
+    none.setAttribute('aria-pressed', p ? 'false' : 'true');
+    none.setAttribute('data-scheme', '');
+    box.appendChild(none);
+
+    if (!p) return;
+    $('position-field').hidden = false;
+    var input = $('pos-input');
+    if (document.activeElement !== input) input.value = p.position;
+    $('pos-down').disabled = p.position <= 1;
+    var lesson = lessonAt(p.schemeId, p.position);
+    var title = $('pos-title');
+    title.textContent = lesson ? lesson.title : 'Not imported yet';
+    title.className = 'pos-title' + (lesson ? '' : ' is-missing');
+    var log = Array.isArray(p.log) ? p.log : [];
+    var last = log[log.length - 1];
+    $('pos-last').textContent = last ? 'Last taught: Lesson ' + last.position + ', ' + shortDate(last.taughtOn) : '';
+    $('pos-last').hidden = !last;
   }
 
   function render() {
@@ -244,13 +302,53 @@
     });
   }
 
+  function chooseScheme(schemeId) {
+    var cls = classById(selectedId);
+    if (!cls) return;
+    var p = host.data().progress[cls.id] || null;
+    var target = schemeId || null;
+    if ((p ? p.schemeId : null) === target) return;
+    var underway = p && (p.position > 1 || (p.log && p.log.length));
+    var ask = Promise.resolve(true);
+    if (underway) {
+      var from = yearName(schemeById(p.schemeId));
+      ask = root.UI.confirm({
+        title: target ? 'Move ' + cls.name + ' to ' + yearName(schemeById(target)) + '?' : 'Unlink ' + cls.name + ' from ' + from + '?',
+        message: cls.name + ' is on Lesson ' + p.position + ' of ' + from + '. ' +
+          (target ? 'It will start ' + yearName(schemeById(target)) + ' at Lesson 1, and its place in ' + from + ' will be lost.'
+                  : 'Its place in ' + from + ' will be removed.'),
+        confirmLabel: target ? 'Change scheme' : 'Unlink'
+      });
+    }
+    ask.then(function (yes) {
+      if (!yes) return;
+      save(function () { return host.store().setClassScheme(cls.id, target); }).then(function () { render(); });
+    });
+  }
+
+  function setPosition(n) {
+    var cls = classById(selectedId);
+    var p = cls && host.data().progress[cls.id];
+    if (!p) return;
+    if (!(n >= 1) || Math.floor(n) !== n) {
+      showError('The lesson number must be a whole number, 1 or more.');
+      $('pos-input').value = p.position;
+      return;
+    }
+    if (n === p.position) { renderProgress(cls); return; }
+    save(function () { return host.store().setClassPosition(cls.id, n); }).then(function () { render(); });
+  }
+
   function deleteClass() {
     var cls = classById(selectedId);
     if (!cls) return;
     host.store().countLessonsForClass(cls.id).then(function (n) {
       var message = n === 0
         ? cls.name + ' is not in your timetable, so no lessons are affected.'
-        : 'Its ' + (n === 1 ? 'lesson' : n + ' lessons') + ' in your timetable will become ' + (n === 1 ? 'a free period' : 'free periods') + '. This cannot be undone.';
+        : 'Its ' + (n === 1 ? 'lesson' : n + ' lessons') + ' in your timetable will become ' + (n === 1 ? 'a free period' : 'free periods') + '.';
+      var where = progressText(cls.id);
+      if (where) message += ' Its place in its scheme of work (' + where + ') will also be removed.';
+      if (n !== 0 || where) message += ' This cannot be undone.';
       return root.UI.confirm({ title: 'Delete ' + cls.name + '?', message: message, confirmLabel: 'Delete class' });
     }).then(function (yes) {
       if (!yes) return;
@@ -296,6 +394,24 @@
     $('btn-create-class').addEventListener('click', addClass);
     $('btn-cancel-new').addEventListener('click', function () { selectedId = null; render(); });
     $('btn-delete-class').addEventListener('click', deleteClass);
+    $('scheme-options').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-scheme]');
+      if (b) chooseScheme(b.getAttribute('data-scheme'));
+    });
+    $('pos-down').addEventListener('click', function () {
+      var p = host.data().progress[selectedId];
+      if (p && p.position > 1) setPosition(p.position - 1);
+    });
+    $('pos-up').addEventListener('click', function () {
+      var p = host.data().progress[selectedId];
+      if (p) setPosition(p.position + 1);
+    });
+    $('pos-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+    });
+    $('pos-input').addEventListener('change', function () {
+      setPosition(parseInt($('pos-input').value, 10));
+    });
   }
 
   root.Classes = {

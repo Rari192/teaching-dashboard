@@ -78,7 +78,7 @@
       <a class="back-button" href="#timetable" aria-label="Back to Timetable"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
       <div class="tt-heading-text">
         <h1>Classes</h1>
-        <span class="tt-sub"><span>Set each class's subject once</span><span aria-hidden="true">·</span><span class="save-status is-saved" id="classes-status" role="status"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>All changes saved</span></span>
+        <span class="tt-sub"><span>Set each class's subject and scheme once</span><span aria-hidden="true">·</span><span class="save-status is-saved" id="classes-status" role="status"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>All changes saved</span></span>
       </div>
     </div>
     <button type="button" class="btn btn-primary" id="btn-add-class">Add class</button>
@@ -103,6 +103,20 @@
           <input class="text-input" id="new-subject-input" type="text" autocomplete="off" autocapitalize="words" enterkeyhint="done" placeholder="Type a subject" aria-label="New subject">
           <button type="button" class="btn" id="btn-use-new-subject">Use</button>
         </div>
+      </div>
+      <div class="field" id="scheme-field" hidden>
+        <span class="eyebrow">Scheme of work</span>
+        <div class="chips" id="scheme-options"></div>
+      </div>
+      <div class="field" id="position-field" hidden>
+        <label class="eyebrow" for="pos-input">Next lesson to teach</label>
+        <div class="stepper">
+          <button type="button" class="btn stepper-btn" id="pos-down" aria-label="One lesson back">−</button>
+          <span class="stepper-value"><span class="stepper-word">Lesson</span><input id="pos-input" class="stepper-input" type="number" inputmode="numeric" min="1" step="1" enterkeyhint="done"></span>
+          <button type="button" class="btn stepper-btn" id="pos-up" aria-label="One lesson on">+</button>
+        </div>
+        <span class="pos-title" id="pos-title"></span>
+        <span class="hint" id="pos-last"></span>
       </div>
       <p class="hint" id="class-note">Changes save as you make them. Changing the default subject updates every timetabled lesson for this class, except lessons where you have changed the subject for that lesson only.</p>
       <p class="sheet-error" id="class-error" role="alert" hidden></p>

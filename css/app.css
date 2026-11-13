@@ -507,3 +507,17 @@ button.lesson-row:active { background: #F0EEE8; }
 .ld-row { display: flex; flex-direction: column; gap: 3px; }
 .ld-row .eyebrow { font-size: 12px; }
 .ld-value { font-size: 17px; line-height: 1.4; overflow-wrap: anywhere; }
+
+/* ---------- class progress ---------- */
+
+.stepper { display: flex; align-items: stretch; gap: 10px; }
+.stepper-btn { width: 64px; height: 64px; padding: 0; font-size: 30px; font-weight: 500; flex: none; }
+.stepper-btn:disabled { opacity: 0.35; }
+.stepper-value { flex: 1; min-width: 0; height: 64px; border-radius: 14px; border: 1px solid #D3D1CA; background: var(--surface); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.stepper-word { font-size: 22px; font-weight: 600; color: var(--ink-2); }
+.stepper-input { width: 3.2em; border: none; background: transparent; font-family: inherit; font-size: 28px; font-weight: 700; color: var(--ink); text-align: left; padding: 0; -moz-appearance: textfield; }
+.stepper-input::-webkit-outer-spin-button, .stepper-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.stepper-value:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.stepper-input:focus { outline: none; }
+.pos-title { font-size: 17px; font-weight: 600; line-height: 1.35; }
+.pos-title.is-missing { color: var(--ink-3); font-weight: 500; }
