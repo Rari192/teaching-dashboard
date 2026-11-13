@@ -14,11 +14,12 @@
 
   // ---------- screens ----------
 
-  var SCREENS = { '': 'screen-home', 'timetable': 'screen-timetable', 'classes': 'screen-classes', 'backup': 'screen-backup', 'lessons': 'screen-lessons' };
-  var MODULES = { 'timetable': 'Timetable', 'classes': 'Classes', 'backup': 'Backup', 'lessons': 'Lessons' };
+  var SCREENS = { '': 'screen-home', 'timetable': 'screen-timetable', 'classes': 'screen-classes', 'backup': 'screen-backup', 'lessons': 'screen-lessons', 'lesson': 'screen-lesson' };
+  var MODULES = { 'timetable': 'Timetable', 'classes': 'Classes', 'backup': 'Backup', 'lessons': 'Lessons', 'lesson': 'Lesson' };
 
   function showScreen() {
-    var name = (location.hash || '').replace('#', '');
+    // The part before any '?' names the screen; the rest is for the screen itself (#lesson?l=...).
+    var name = (location.hash || '').replace('#', '').split('?')[0];
     if (!SCREENS[name]) name = '';
     // Let the screen being left finish anything in progress (for example a name being typed).
     var leavingModule = currentScreen !== name && MODULES[currentScreen] ? root[MODULES[currentScreen]] : null;
@@ -97,6 +98,7 @@
     root.Classes.init(host);
     root.Backup.init(host);
     root.Lessons.init(host);
+    root.Lesson.init(host);
     root.TDStorage.requestPersistence();
     root.TDStorage.open().then(function (s) {
       store = s;
