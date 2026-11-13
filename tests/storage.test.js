@@ -602,6 +602,17 @@
     });
   });
 
+  test('Two chosen files with the same id and version but different content: neither is imported', function () {
+    return withFreshStore(function (store) {
+      var files = asFiles(lessonFile('y9', 'hacking', 2, 1, 'Hacking'), lessonFile('y9', 'hacking', 2, 1, 'Hacking (edited)'));
+      return store.previewImport(files).then(function (items) {
+        eq(statuses(items), 'invalid,invalid', 'statuses');
+        return importNow(store, files);
+      }).then(function () { return store.loadAll(); })
+        .then(function (all) { eq(all.lessons.length, 0, 'lessons'); });
+    });
+  });
+
   test('Two different chosen lessons at the same position: neither is imported', function () {
     return withFreshStore(function (store) {
       var files = asFiles(lessonFile('y9', 'hacking', 2, 1, 'Hacking'), lessonFile('y9', 'phishing', 2, 1, 'Phishing'));

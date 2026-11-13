@@ -405,8 +405,21 @@
       var b = bestForId[item.record.id];
       if (b === undefined || item.record.version > items[b].record.version) bestForId[item.record.id] = i;
     });
+    // Same id and same top version but different content: there is no safe way to choose, so use neither.
+    var contentClash = {};
     items.forEach(function (item, i) {
-      if (item.record && bestForId[item.record.id] !== i) {
+      if (!item.record) return;
+      var best = items[bestForId[item.record.id]];
+      if (bestForId[item.record.id] !== i && item.record.version === best.record.version && !sameContent(item.record, best.record)) {
+        contentClash[item.record.id] = best.record.version;
+      }
+    });
+    items.forEach(function (item, i) {
+      if (!item.record) return;
+      if (contentClash[item.record.id] !== undefined && item.record.version === contentClash[item.record.id]) {
+        item.status = 'invalid';
+        item.message = 'More than one chosen file is version ' + item.record.version + ' of this lesson, with different content. Choose only one of them.';
+      } else if (bestForId[item.record.id] !== i) {
         item.status = 'repeat';
         item.message = 'This lesson was chosen more than once. Only version ' + items[bestForId[item.record.id]].record.version + ' will be used.';
       }

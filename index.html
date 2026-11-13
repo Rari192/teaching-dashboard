@@ -63,6 +63,7 @@
     </div>
     <div class="tt-actions">
       <button type="button" class="btn" id="btn-backup">Backup</button>
+      <button type="button" class="btn" id="btn-lessons">Lessons</button>
       <button type="button" class="btn" id="btn-classes">Classes</button>
       <button type="button" class="btn" id="btn-edit" aria-pressed="false">Edit</button>
     </div>
@@ -117,6 +118,34 @@
     </section>
     <section class="class-panel class-panel-none" id="class-panel-none" hidden>
       <p class="hint">Choose a class on the left.</p>
+    </section>
+  </main>
+</div>
+
+<!-- LESSONS -->
+<div class="screen lessons" id="screen-lessons" hidden>
+  <header class="tt-header">
+    <div class="tt-heading">
+      <a class="back-button" href="#timetable" aria-label="Back to Timetable"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
+      <div class="tt-heading-text">
+        <h1>Lessons</h1>
+        <span class="tt-sub"><span class="save-status is-saved"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Saved on this iPad</span><span aria-hidden="true">·</span><span>Works offline</span></span>
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary" id="btn-import-lessons">Import lessons</button>
+    <input type="file" id="lesson-files" accept=".json,application/json" multiple hidden>
+  </header>
+
+  <div class="backup-message" id="lessons-message" role="status" hidden></div>
+
+  <main class="lessons-main">
+    <section class="class-list-card" aria-label="Year groups">
+      <div class="class-list" id="scheme-list"></div>
+    </section>
+    <section class="lesson-panel" aria-labelledby="lesson-panel-title">
+      <h2 id="lesson-panel-title"></h2>
+      <div class="lesson-list" id="lesson-list"></div>
+      <p class="hint" id="lesson-list-empty" hidden></p>
     </section>
   </main>
 </div>
@@ -213,6 +242,37 @@
   </div>
 </div>
 
+<!-- IMPORT PREVIEW -->
+<div class="overlay" id="import-preview" hidden>
+  <div class="sheet sheet-wide" role="dialog" aria-modal="true" aria-labelledby="ip-title">
+    <div class="sheet-head-text">
+      <span class="eyebrow">Check before importing</span>
+      <h2 id="ip-title">Import</h2>
+    </div>
+    <p class="hint">Nothing is saved until you tap Import. Class progress is never changed by importing.</p>
+    <div class="ip-groups" id="ip-groups"></div>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-large" id="ip-cancel">Cancel</button>
+      <button type="button" class="btn btn-large btn-primary" id="ip-import">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON DETAILS -->
+<div class="overlay" id="lesson-detail" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ld-title">
+    <div class="sheet-head-text">
+      <span class="eyebrow" id="ld-eyebrow"></span>
+      <h2 id="ld-title"></h2>
+    </div>
+    <div class="ld-rows" id="ld-rows"></div>
+    <div class="sheet-foot">
+      <button type="button" class="btn btn-delete" id="ld-delete">Delete lesson</button>
+      <button type="button" class="btn btn-primary btn-wide" id="ld-close">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- RESTORE CONFIRMATION -->
 <div class="overlay" id="restore-confirm" hidden>
   <div class="dialog dialog-wide" role="alertdialog" aria-modal="true" aria-labelledby="rc-title" aria-describedby="rc-msg">
@@ -267,6 +327,7 @@
 <script src="js/timetable.js"></script>
 <script src="js/classes.js"></script>
 <script src="js/backup.js"></script>
+<script src="js/lessons.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

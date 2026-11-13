@@ -14,8 +14,8 @@
 
   // ---------- screens ----------
 
-  var SCREENS = { '': 'screen-home', 'timetable': 'screen-timetable', 'classes': 'screen-classes', 'backup': 'screen-backup' };
-  var MODULES = { 'timetable': 'Timetable', 'classes': 'Classes', 'backup': 'Backup' };
+  var SCREENS = { '': 'screen-home', 'timetable': 'screen-timetable', 'classes': 'screen-classes', 'backup': 'screen-backup', 'lessons': 'screen-lessons' };
+  var MODULES = { 'timetable': 'Timetable', 'classes': 'Classes', 'backup': 'Backup', 'lessons': 'Lessons' };
 
   function showScreen() {
     var name = (location.hash || '').replace('#', '');
@@ -96,6 +96,7 @@
     root.Timetable.init(host);
     root.Classes.init(host);
     root.Backup.init(host);
+    root.Lessons.init(host);
     root.TDStorage.requestPersistence();
     root.TDStorage.open().then(function (s) {
       store = s;
