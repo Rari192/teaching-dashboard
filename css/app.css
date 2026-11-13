@@ -621,3 +621,17 @@ button.lesson-row:active { background: #F0EEE8; }
 .ls-points.is-numbered { list-style: none; padding-left: 0; }
 .ls-section-board { margin-left: 10px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-3); font-size: 13px; }
 .next:focus { outline: none; }
+
+/* Today card: the class's next lesson */
+.today-lesson { font-size: 19px; font-weight: 600; line-height: 1.3; }
+.today-lesson.is-missing { font-weight: 500; opacity: 0.75; }
+.open-lesson.is-unavailable { opacity: 0.55; }
+
+/* Lesson details: Open and Done */
+.ld-actions { display: flex; gap: 10px; }
+
+/* Prompter: fade when the card has more to scroll */
+.ls-card { position: relative; }
+.ls-card::after { content: ''; position: absolute; left: 0; right: 0; bottom: var(--fade-bottom, 70px); height: 56px; pointer-events: none; opacity: 0; transition: opacity .2s; background: linear-gradient(rgba(255, 255, 255, 0), var(--surface)); }
+.ls-card.is-ask::after { background: linear-gradient(rgba(231, 241, 239, 0), var(--accent-tint)); }
+.ls-card.has-more::after { opacity: 1; }

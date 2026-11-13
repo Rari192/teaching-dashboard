@@ -283,6 +283,17 @@
     else if (screen.kind === 'task') renderTask(box, screen.step);
     else renderEnd(box);
     $('ls-back').hidden = state.index === 0;
+    updateFade();
+  }
+
+  // A soft fade at the bottom of the card whenever there is more to scroll to.
+  function updateFade() {
+    var box = $('ls-card-scroll');
+    var more = box.scrollHeight - box.scrollTop - box.clientHeight > 4;
+    var card = $('ls-card');
+    card.classList.toggle('has-more', more);
+    // Sit the fade on the bottom edge of the scrolling area, whatever is below it.
+    card.style.setProperty('--fade-bottom', (card.clientHeight - box.offsetTop - box.clientHeight) + 'px');
   }
 
   function renderNext(screen) {
@@ -379,6 +390,8 @@
 
   function wire() {
     $('ls-close').addEventListener('click', close);
+    $('ls-card-scroll').addEventListener('scroll', updateFade, { passive: true });
+    window.addEventListener('resize', function () { if (state) updateFade(); });
     $('ls-missing-back').addEventListener('click', close);
     $('ls-next').addEventListener('click', function () { go(1); });
     $('ls-back').addEventListener('click', function () { go(-1); });

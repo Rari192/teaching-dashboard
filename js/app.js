@@ -58,9 +58,11 @@
 
   function wireButtons() {
     document.getElementById('today-card').addEventListener('click', function (e) {
-      if (e.target.closest('[data-action="open-lesson"]')) {
-        root.UI.toast('Lessons open here in a later phase.');
-      }
+      var btn = e.target.closest('[data-action="open-lesson"]');
+      if (!btn) return;
+      var lessonId = btn.getAttribute('data-lesson');
+      if (lessonId) location.hash = root.Lesson.address(lessonId, btn.getAttribute('data-class')).slice(1);
+      else root.UI.toast(btn.getAttribute('data-reason') || 'There is no lesson to open.');
     });
     Array.prototype.forEach.call(document.querySelectorAll('.year-nav button'), function (b) {
       b.addEventListener('click', function () {
